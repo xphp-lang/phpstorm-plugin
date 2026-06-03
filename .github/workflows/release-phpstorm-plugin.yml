@@ -70,7 +70,7 @@ jobs:
         # FAILS if that property is unset/empty -- a release zip never ships
         # without an embedded LSP.
         run: |
-          ./gradlew 
+          ./gradlew \
             buildPlugin \
             -PpluginVersion=${{ steps.tag.outputs.version }}
 
