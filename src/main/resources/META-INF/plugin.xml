@@ -18,20 +18,22 @@
 
     <description><![CDATA[
         Language support for <a href="https://github.com/xphp-lang/xphp">xphp</a>, a PHP
-        superset with monomorphized generics that compiles to vanilla PHP.<br/><br/>
+        superset with monomorphized generics that compiles to vanilla PHP.
+        <br/><br/>
 
         Editing intelligence (diagnostics, hover, go-to-definition, completion) is delivered
-        by the bundled xphp Language Server over the IntelliJ Platform LSP API.  The same
-        server powers the VS Code extension at <code>tools/lsp/vscode-extension/</code>;
-        single source of truth, no per-editor duplication.<br/><br/>
+        by the bundled xphp Language Server over the IntelliJ Platform LSP API.
+        <br/><br/>
 
-        Requires PhpStorm 2026.1 or later.
+        Requires:<br/><br/>
+        - PHP 8.4+<br/>
+        - PhpStorm 2026.1 or later.
     ]]></description>
 
     <change-notes><![CDATA[
         <h3>0.1.0</h3>
         <ul>
-            <li>Initial scaffold.  No editor functionality yet.</li>
+            <li>MVP: basic functionality to support xphp v0.1.0</li>
         </ul>
     ]]></change-notes>
 
