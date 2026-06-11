@@ -25,16 +25,18 @@ import org.eclipse.lsp4j.TextDocumentIdentifier
 import javax.swing.JList
 
 /**
- * Client-side handler for `editor.action.showReferences` -- the
- * de-facto LSP convention for "open the references panel with
- * pre-baked locations" emitted by code lenses (and code actions).
+ * Client-side handler for `xphp.showReferences` -- the namespaced
+ * command the language server emits on its "Show references" code
+ * lenses to "open the references panel with pre-baked locations".
  *
- * PhpStorm's LSP4IJ-rooted LSP adapter doesn't recognize this
- * command name out of the box and falls back to a server-side
- * `workspace/executeCommand` round-trip.  The server we ship
- * registers a no-op for the command, so before this customizer
- * the click would silently do nothing -- the user's
- * `2026-05-30 11:0*` prod log proved exactly that.
+ * The JetBrains LSP adapter's default `LspCommandsSupport` round-trips
+ * every code-lens command to the server via `workspace/executeCommand`;
+ * the server intentionally does NOT register (or advertise) this
+ * command, so without this customizer the click would error / do
+ * nothing.  (The command is deliberately namespaced rather than the
+ * VS Code-internal `editor.action.showReferences`: advertising that
+ * id server-side makes vscode-languageclient shadow VS Code's built-in
+ * peek, so each client handles a neutral id client-side instead.)
  *
  * Override here intercepts the command on the client side before
  * the round-trip.  Dispatch:
@@ -68,7 +70,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
     private fun handleShowReferences(server: LspServer, command: Command) {
         val args = command.arguments
         if (args == null || args.isEmpty()) {
-            LOG.debug("editor.action.showReferences: missing arguments")
+            LOG.debug("xphp.showReferences: missing arguments")
             return
         }
         // Pull the lens-side position out of the command arguments so
@@ -93,12 +95,12 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
             else -> fetchLocations(server, args)
         }
         if (locations.isEmpty()) {
-            LOG.debug("editor.action.showReferences: zero locations to navigate to")
+            LOG.debug("xphp.showReferences: zero locations to navigate to")
             return
         }
         val items = locations.toUsageItems()
         if (items.isEmpty()) {
-            LOG.warn("editor.action.showReferences: every location had an unresolvable URI")
+            LOG.warn("xphp.showReferences: every location had an unresolvable URI")
             return
         }
         if (items.size == 1) {
@@ -123,13 +125,13 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
         if (args.size < 2) return emptyList()
         val uri = parseString(args[0]) ?: run {
             LOG.warn(
-                "editor.action.showReferences: arguments[0] is not a String uri " +
+                "xphp.showReferences: arguments[0] is not a String uri " +
                     "(was ${args[0]?.javaClass?.simpleName})"
             )
             return emptyList()
         }
         val position = parsePosition(args[1]) ?: run {
-            LOG.warn("editor.action.showReferences: arguments[1] is not a Position")
+            LOG.warn("xphp.showReferences: arguments[1] is not a Position")
             return emptyList()
         }
         val params = ReferenceParams(
@@ -144,7 +146,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
             }
             raw ?: emptyList()
         } catch (e: Exception) {
-            LOG.warn("editor.action.showReferences: textDocument/references fetch failed", e)
+            LOG.warn("xphp.showReferences: textDocument/references fetch failed", e)
             emptyList()
         }
     }
@@ -270,7 +272,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
             xy.translate(0, editor.lineHeight)
             RelativePoint(editor.contentComponent, xy)
         } catch (e: Exception) {
-            LOG.debug("editor.action.showReferences: anchor-point conversion failed", e)
+            LOG.debug("xphp.showReferences: anchor-point conversion failed", e)
             null
         }
     }
@@ -306,7 +308,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
             val type = object : TypeToken<List<Location>>() {}.type
             gson.fromJson<List<Location>>(json, type)
         } catch (e: Exception) {
-            LOG.warn("editor.action.showReferences: failed to parse locations", e)
+            LOG.warn("xphp.showReferences: failed to parse locations", e)
             null
         }
     }
@@ -346,7 +348,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
     }
 
     private companion object {
-        const val COMMAND_NAME = "editor.action.showReferences"
+        const val COMMAND_NAME = "xphp.showReferences"
         private val LOG = Logger.getInstance(XphpShowReferencesCommandsSupport::class.java)
 
         /**
@@ -364,7 +366,7 @@ class XphpShowReferencesCommandsSupport : LspCommandsSupport() {
                 val lines = text.split('\n')
                 if (line >= lines.size) "" else lines[line].trim()
             } catch (e: Exception) {
-                LOG.debug("editor.action.showReferences: could not read preview for ${vfile.url}:$line", e)
+                LOG.debug("xphp.showReferences: could not read preview for ${vfile.url}:$line", e)
                 ""
             }
         }

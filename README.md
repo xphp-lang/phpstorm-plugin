@@ -32,8 +32,9 @@ In addition to all features supported by the LSP, this plugin provides the
 following:
 
 - **Code lens click target** is dispatched client-side
-  (`editor.action.showReferences`), so clicking the lens lands in
-  PhpStorm's native usage popup, not a generic LSP location list.
+  (the server's namespaced `xphp.showReferences` command), so clicking
+  the lens lands in PhpStorm's native usage popup, not a generic LSP
+  location list.
 - **File rename sync** (the inverse of the LSP `willRenameFiles`
   direction) is implemented in plugin Kotlin: a Shift+F6 class
   rename triggers the matching file rename via PhpStorm's own
@@ -100,8 +101,8 @@ Plugin-only Kotlin classes that wrap or extend the standard LSP path:
 - `XphpClassRenameListener` (via `BulkFileListener`) -- listens for class
   renames inside `.xphp` files and triggers the matching file rename to keep
   `PSR-4` in sync.
-- `XphpShowReferencesCommandsSupport` -- intercepts
-  `editor.action.showReferences` from the server and opens
-  PhpStorm's native usage popup at the lens position.
+- `XphpShowReferencesCommandsSupport` -- intercepts the server's
+  `xphp.showReferences` code-lens command and opens PhpStorm's
+  native usage popup at the lens position.
 - `PharExtractor` -- copies the bundled PHAR from the plugin jar
   to PhpStorm's system directory on first load.
