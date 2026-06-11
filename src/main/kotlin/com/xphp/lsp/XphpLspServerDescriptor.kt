@@ -87,16 +87,15 @@ class XphpLspServerDescriptor(project: Project) :
     // the class (the documented use case), not constructing it from
     // outside, and we inherit every default the no-arg path provides.
     override val lspCustomization: LspCustomization = object : LspCustomization() {
-        // Client-side handler for the `editor.action.showReferences`
-        // command that XphpCodeLensHandler emits with pre-baked
-        // Location[].  Without this override PhpStorm's default
-        // LspCommandsSupport round-trips every command to the server
-        // via `workspace/executeCommand`; our server-side no-op
-        // returns null, the click silently fails.  The override
-        // intercepts the specific command client-side and navigates
-        // directly to the first location.  See
-        // XphpShowReferencesCommandsSupport for the rationale and
-        // multi-location follow-up note.
+        // Client-side handler for the `xphp.showReferences` command
+        // that XphpCodeLensHandler emits with pre-baked Location[].
+        // Without this override PhpStorm's default LspCommandsSupport
+        // round-trips every code-lens command to the server via
+        // `workspace/executeCommand`; the server does not register the
+        // command, so the click would fail.  The override intercepts
+        // the command client-side and navigates directly to the first
+        // location.  See XphpShowReferencesCommandsSupport for the
+        // rationale and multi-location follow-up note.
         override val commandsCustomizer = XphpShowReferencesCommandsSupport()
     }
 
