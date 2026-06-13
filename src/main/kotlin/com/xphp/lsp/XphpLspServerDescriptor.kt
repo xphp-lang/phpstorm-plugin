@@ -97,6 +97,22 @@ class XphpLspServerDescriptor(project: Project) :
         // location.  See XphpShowReferencesCommandsSupport for the
         // rationale and multi-location follow-up note.
         override val commandsCustomizer = XphpShowReferencesCommandsSupport()
+
+        // Color .xphp semantic tokens by mapping each LSP token type onto
+        // PhpStorm's own PHP highlighting keys (see XphpSemanticTokensSupport),
+        // so xphp reads exactly like PHP in whatever color scheme is active.
+        // Without this customizer the platform's default token->color table
+        // leaves variables, type-parameters, parameters, and the class/method
+        // family in the editor's default foreground -- so e.g. `$asInt` and
+        // `int` in `$asInt = Util::identity::<int>(42)` rendered black while
+        // only the number `42` picked up a color.
+        //
+        // VERIFY-AGAINST-API: property name. `commandsCustomizer` above is
+        // the proven pattern; the semantic-tokens slot on `LspCustomization`
+        // is expected to be `semanticTokensCustomizer`. If the 2026.1 API
+        // names it differently, this is a one-word rename (the compiler
+        // will point at it).
+        override val semanticTokensCustomizer = XphpSemanticTokensSupport()
     }
 
 
