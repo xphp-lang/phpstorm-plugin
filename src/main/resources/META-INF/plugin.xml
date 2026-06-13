@@ -72,29 +72,6 @@
     -->
     <depends>com.jetbrains.php</depends>
 
-    <!--
-      Bundled TextMate plugin.  Two layers of dependency:
-
-      1. Legacy `<depends>` on the top-level plugin id.  Without it,
-         IntelliJ would let our plugin load even if the user is on an
-         IDE distribution that doesn't ship TextMate, and our extension
-         registrations below would silently no-op.
-
-      2. v2 `<dependencies><module .../></dependencies>` on the
-         `intellij.textmate` sub-module.  PhpStorm 2026.1's TextMate
-         plugin declares the `com.intellij.textmate.bundleProvider`
-         extension point INSIDE a `<content><module name="intellij.textmate">`
-         block, not in its top-level descriptor.  Plain `<depends>` on
-         the parent plugin id no longer pulls in those sub-module EPs;
-         our `<textmate.bundleProvider>` registration would be ignored
-         at plugin load and `.xphp` files would open as plain text.
-         This is the load-bearing dependency.
-    -->
-    <depends>org.jetbrains.plugins.textmate</depends>
-    <dependencies>
-        <module name="intellij.textmate"/>
-    </dependencies>
-
     <extensions defaultExtensionNs="com.intellij">
         <!--
           NOTE: we deliberately do NOT register a `<fileType>` for *.xphp.
@@ -108,14 +85,11 @@
           ("Cannot focus editor ... preferredFocusedComponent is null" in
           idea.log, immediately followed by `fileClosed`).
 
-          With no `<fileType>` from us, PhpStorm's file-type detector
-          falls through to the TextMate plugin, which claims `.xphp` via
-          our bundle's `fileTypes: ["xphp"]` declaration once
-          XphpBundleRegistrar has registered the bundle.  Result: the
-          file opens as a TextMate-handled file with our grammar applied
-          for highlighting, and our `XphpLspServerSupportProvider`
-          routes the LSP by extension (`file.extension == "xphp"`), the
-          docs-recommended pattern.
+          With no `<fileType>` from us, PhpStorm opens `.xphp` files as
+          plain text, and our `XphpLspServerSupportProvider` routes the
+          LSP by extension (`file.extension == "xphp"`), the
+          docs-recommended pattern.  Highlighting comes from the LSP's
+          semantic tokens, so no editor-side grammar is needed.
 
           See https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html
           #basic-implementation for the canonical filter shape.
@@ -162,20 +136,6 @@
             implementation="com.xphp.lsp.XphpLspServerSupportProvider"/>
 
         <!--
-          xphp TextMate grammar bootstrap.  Runs once per project open
-          to extract our bundled tmLanguage.json onto disk and register
-          it with the IDE's user-bundles registry
-          (`TextMateUserBundlesSettings.addBundle`).  See the KDoc on
-          [XphpBundleRegistrar] for why we go through user-bundles
-          instead of the `com.intellij.textmate.bundleProvider`
-          extension point you'd expect: that EP is declared but
-          unwired in PhpStorm 2026.1.2; registering against it is a
-          silent no-op.
-        -->
-        <postStartupActivity
-            implementation="com.xphp.lsp.textmate.XphpBundleRegistrar"/>
-
-        <!--
           Cycle L Half B: VFS rename listener for `.xphp` / `.php`
           files.  Sends `workspace/willRenameFiles` to the xphp LSP
           server on each rename; the response carries text edits
@@ -200,12 +160,9 @@
           `<lang.syntaxHighlighterFactory language="xphp" ...>`.  Without
           an `XphpLanguage` for the LSP-only model (see the longer
           rationale above on the missing `<fileType>`), there's nothing
-          to bind the factory to.  Highlighting goes through the
-          TextMate plugin's own file-recognition path; the bundle
-          registered by XphpBundleRegistrar declares `fileTypes: ["xphp"]`,
-          so the platform classifies `.xphp` files as `TextMateFileType`
-          and the TextMate-provided highlighter (registered for
-          `TextMateLanguage` by the platform) handles them automatically.
+          to bind the factory to.  Highlighting is delivered entirely by
+          the LSP's semantic tokens, which the IntelliJ LSP API applies
+          on top of the plain-text editor.
         -->
     </extensions>
 

@@ -26,7 +26,7 @@ For LSP-level work see [`../../lsp/docs/roadmap.md`](../../lsp/docs/roadmap.md).
 
 | Surface                                                   | Notes                                                                                                                                                                                                                                                                      |
 |-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **`.xphp` file type recognition**                         | Bundled TextMate grammar wired through PhpStorm's `FileType` infrastructure.                                                                                                                                                                                               |
+| **`.xphp` file type recognition**                         | `.xphp` files open as plain text and are routed to the LSP by extension; the LSP's semantic tokens supply highlighting.                                                                                                                                                     |
 | **Zero-config server install**                            | LSP PHAR bundled inside the plugin jar; `PharExtractor` copies it to PhpStorm's system directory on first plugin load.                                                                                                                                                     |
 | **All LSP-driven editor features**                        | Diagnostics, hover, GTD, find usages, completion, rename, code actions, code lens, call / type hierarchy, semantic tokens, signature help, inlay hints, folding ranges, document highlight, document / workspace symbols — see [`README.md#features`](README.md#features). |
 | **PSR-4 class ↔ filename rename sync (both directions)**  | `XphpFileRenameListener` dispatches LSP 3.17 `willRenameFiles` on VFS moves; `XphpClassRenameListener` triggers the matching file rename when a class is renamed in source. Cross-directory file moves also update the namespace and every consuming `use` import.         |
@@ -136,7 +136,7 @@ committing to a native action.
 
 ### Native Kotlin lexer / parser for `.xphp`
 
-**What it'd do.** Replace the TextMate grammar with a full
+**What it'd do.** Replace the LSP-only plain-text model with a full
 IntelliJ PSI-aware lexer + parser written in Kotlin, unlocking:
 IntelliJ-grade refactoring (extract method / inline / change
 signature), structure view that reflects xphp generics natively,

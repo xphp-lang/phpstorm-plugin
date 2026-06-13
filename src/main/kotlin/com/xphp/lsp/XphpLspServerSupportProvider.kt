@@ -22,8 +22,8 @@ import com.intellij.platform.lsp.api.LspServerSupportProvider
  * the extension filter here is the docs-recommended pattern
  * (https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html
  * #basic-implementation) and works regardless of how PhpStorm decides to
- * classify `.xphp` files internally (TextMate-handled when our bundle is
- * loaded; plain text otherwise).
+ * classify `.xphp` files internally (plain text, with the LSP's semantic
+ * tokens supplying highlighting).
  */
 class XphpLspServerSupportProvider : LspServerSupportProvider {
 

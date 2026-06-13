@@ -27,8 +27,7 @@ import java.security.MessageDigest
  * and the cost is one file write.
  *
  * Structurally the `@Service` is a thin facade over an inner [Extractor]
- * that owns the IO state machine.  The split mirrors
- * [com.xphp.lsp.textmate.XphpTextMateBundleProvider.Extractor] and exists
+ * that owns the IO state machine.  The split exists
  * for testability: unit tests construct the [Extractor] directly with
  * caller-controlled `streamLoader` and `targetPath`, so the real production
  * state machine is exercised rather than re-implemented under test.

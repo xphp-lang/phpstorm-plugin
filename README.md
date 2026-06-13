@@ -2,8 +2,8 @@
 
 Editing intelligence for `.xphp` files inside PhpStorm -- every
 capability of the [xphp Language Server](../lsp/) plus a few
-PhpStorm-native niceties layered on top. One LSP server, one TextMate
-grammar, two editor integrations (this plugin and the [VS Code
+PhpStorm-native niceties layered on top. One LSP server, two editor
+integrations (this plugin and the [VS Code
 extension](../vscode-extension/)).
 
 For what's planned next, see [roadmap](./docs/roadmap.md).
