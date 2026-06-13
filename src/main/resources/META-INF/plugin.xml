@@ -33,7 +33,7 @@
     <change-notes><![CDATA[
         <h3>0.2.0</h3>
         <ul>
-            <li>Bundle xphp language server v0.2.2.</li>
+            <li>Bundle xphp language server v0.2.3.</li>
             <li>Match the server's namespaced <code>xphp.showReferences</code> code-lens command.</li>
         </ul>
         <h3>0.1.0</h3>
