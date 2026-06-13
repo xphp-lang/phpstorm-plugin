@@ -11,6 +11,7 @@
 
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import java.net.URI
+import java.security.MessageDigest
 
 plugins {
     id("java")
@@ -137,24 +138,42 @@ intellijPlatform {
 // Gradle's configuration cache tracks the value and re-runs the download
 // when it changes.
 val xphpLspPharUrl = providers.gradleProperty("xphpLspPharUrl")
+val xphpLspPharSha256 = providers.gradleProperty("xphpLspPharSha256")
 val downloadedPharDir = layout.buildDirectory.dir("lsp")
 
 val downloadLspPhar by tasks.registering {
     description = "Downloads xphp-lsp.phar (xphpLspPharUrl in gradle.properties) for bundling into the plugin jar."
     group = "build"
 
-    // The URL is the only meaningful input -- change it and the PHAR
-    // re-downloads; leave it unchanged and the task stays up-to-date so
-    // repeated builds don't re-fetch.  Declared optional so configuration
-    // (and tasks that never touch the PHAR, e.g. `help`) doesn't blow up
-    // just because the var is unset; the hard requirement is enforced at
-    // execution time in the action below.
+    // Two inputs gate the download:
+    //
+    //   xphpLspPharUrl    -- change it and the PHAR re-downloads.  Sufficient
+    //                        for the normal release flow (the URL is
+    //                        version-pinned, e.g. .../v0.2.1/xphp-lsp.phar, so
+    //                        a version bump changes the string).
+    //   xphpLspPharSha256 -- the expected sha256 of the bytes at that URL.
+    //                        Tracking it as a SECOND input closes the gap the
+    //                        URL alone can't: when a release is RE-PUBLISHED at
+    //                        the same URL (e.g. the server team fixes the
+    //                        embedded serverInfo version and re-uploads the
+    //                        SAME v0.2.1 asset), the URL is unchanged so a
+    //                        URL-only task stays UP-TO-DATE and keeps bundling
+    //                        the stale bytes.  Bumping the pinned sha forces a
+    //                        re-fetch, and the post-download check below fails
+    //                        loudly if the bytes don't match (catching a
+    //                        corrupt download or a silently-changed artifact).
+    //
+    // Both optional: sha unset => integrity check skipped, URL-only behaviour
+    // (unchanged from before).  URL unset is still a hard, actionable failure
+    // at execution time in the action below.
     inputs.property("xphpLspPharUrl", xphpLspPharUrl).optional(true)
+    inputs.property("xphpLspPharSha256", xphpLspPharSha256).optional(true)
     outputs.dir(downloadedPharDir)
 
     // Capture providers into locals so the action body holds no reference to
     // `Project` -- keeps the task configuration-cache compatible.
     val urlProvider = xphpLspPharUrl
+    val shaProvider = xphpLspPharSha256
     val outDir = downloadedPharDir
 
     doLast {
@@ -181,6 +200,28 @@ val downloadLspPhar by tasks.registering {
             phar.outputStream().use { output -> input.copyTo(output) }
         }
         logger.lifecycle("Downloaded xphp-lsp.phar (${phar.length()} bytes) to $phar")
+
+        // Integrity / freshness check.  Only runs when a sha is pinned;
+        // case-insensitive compare so the gradle.properties value can be
+        // upper- or lower-case hex.
+        val expectedSha = shaProvider.orNull?.takeIf { it.isNotBlank() }
+        if (expectedSha != null) {
+            val actualSha = MessageDigest.getInstance("SHA-256")
+                .digest(phar.readBytes())
+                .joinToString("") { "%02x".format(it) }
+            if (!actualSha.equals(expectedSha, ignoreCase = true)) {
+                throw GradleException(
+                    "xphp-lsp.phar sha256 mismatch.\n" +
+                        "  expected (xphpLspPharSha256): $expectedSha\n" +
+                        "  actual (downloaded from URL):  $actualSha\n" +
+                        "The bytes at $url do not match the pinned checksum.  " +
+                        "Either the release was re-published with different " +
+                        "contents (update xphpLspPharSha256 in gradle.properties " +
+                        "to the new value) or the download is corrupt/wrong."
+                )
+            }
+            logger.lifecycle("Verified xphp-lsp.phar sha256 ($actualSha)")
+        }
     }
 }
 
