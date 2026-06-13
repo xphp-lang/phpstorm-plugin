@@ -33,7 +33,7 @@
     <change-notes><![CDATA[
         <h3>0.2.0</h3>
         <ul>
-            <li>Bundle xphp language server v0.2.0.</li>
+            <li>Bundle xphp language server v0.2.2.</li>
             <li>Match the server's namespaced <code>xphp.showReferences</code> code-lens command.</li>
         </ul>
         <h3>0.1.0</h3>
@@ -163,6 +163,23 @@
           to bind the factory to.  Highlighting is delivered entirely by
           the LSP's semantic tokens, which the IntelliJ LSP API applies
           on top of the plain-text editor.
+        -->
+
+        <!--
+          Semantic-token colors are handled entirely in code, with NO
+          extension registration here: XphpSemanticTokensSupport (wired in
+          XphpLspServerDescriptor.lspCustomization) maps each LSP token type
+          onto PhpStorm's own PHP highlighting key
+          (com.jetbrains.php.lang.highlighter.PhpHighlightingData).  So .xphp
+          code is colored exactly like PHP in whatever color scheme is active
+          (stock, New UI, "Islands", or user-customized) and follows any
+          edit the user makes to PHP's colors.
+
+          An earlier iteration registered custom XPHP_* attribute keys plus
+          per-scheme <additionalTextAttributes> seeds and a <colorSettingsPage>;
+          that rendered black on any scheme not literally named Default/Darcula
+          and never matched the user's PHP colors, so it was removed in favour
+          of deferring to the PHP keys.
         -->
     </extensions>
 
