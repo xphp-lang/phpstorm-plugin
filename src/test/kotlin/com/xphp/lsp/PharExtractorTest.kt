@@ -16,8 +16,7 @@ import java.security.MessageDigest
 /**
  * Tests for [PharExtractor.Extractor]'s IO state machine.
  *
- * Mirrors [com.xphp.lsp.textmate.XphpTextMateBundleProviderTest]'s shape:
- * we instantiate the production `Extractor` directly with caller-controlled
+ * We instantiate the production `Extractor` directly with caller-controlled
  * `streamLoader` and a `@TempDir`-rooted `targetPath`.  The same code paths
  * run that fire when the IDE boots; nothing is re-implemented under test.
  * A regression in `Extractor.extract()` (e.g. someone removes the sidecar
